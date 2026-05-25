@@ -12,7 +12,7 @@ public class SaludJugador : MonoBehaviour
 
     public void RecibirDaño(int cantidad)
     {
-        vidaActual -= cantidad;
+        vidaActual -= cantidad - 100;
         Debug.Log($"Jugador recibe {cantidad} de daño. Vida restante: {vidaActual}");
         if (vidaActual <= 0) Morir();
     }

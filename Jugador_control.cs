@@ -18,11 +18,12 @@ public class Jugador_control : MonoBehaviour
 
     private bool atacando = false;
     private AudioSource laser;
-    private int contador=0;
+    private int contador = 0;
     public ProgressBar Pb;
-    
+
     private float yInicial;
     private float distanciaMaximaFall = 20f; // Metros de diferencia para reiniciar
+    public float tiempoAnimacionMuerte = 2.5f;
 
     void Start()
     {
@@ -30,7 +31,7 @@ public class Jugador_control : MonoBehaviour
         laser = GetComponent<AudioSource>();
         Pb.BarValue = vida;
         textoContador.text = "Puntaje: " + contador.ToString();
-        
+
         yInicial = transform.position.y;
     }
 
@@ -42,13 +43,13 @@ public class Jugador_control : MonoBehaviour
         {
             Animar();
         }
-        
+
         // Verificar si cayó más de 20 metros
         float yActual = transform.position.y;
         if (yInicial - yActual > distanciaMaximaFall)
         {
-            Debug.Log("¡JUGADOR CAYÓ! Reiniciando escena...");
-            StartCoroutine(ReiniciarEscena());
+            Debug.Log("¡JUGADOR CAYÓ!");
+            Morir();
         }
     }
 
@@ -58,14 +59,18 @@ public class Jugador_control : MonoBehaviour
 
         StartCoroutine(Reiniciar());
     }
+    public float tiempoDisparo = 0.10f;
+    public float duracionAnimacion = 0.4f;
 
     public IEnumerator Reiniciar()
     {
         atacando = true;
 
+        // Iniciar animación
         anim.SetBool("isSendingMagic", true);
 
-        yield return new WaitForSecondsRealtime(1.0f);
+        // Esperar el frame donde debe salir el disparo
+        yield return new WaitForSeconds(tiempoDisparo);
 
         if (poder != null)
         {
@@ -80,24 +85,20 @@ public class Jugador_control : MonoBehaviour
                 disparo.jugador = gameObject;
 
                 disparo.Shoot();
+
                 laser.Play();
             }
-            else
-            {
-                Debug.LogError(
-                    "El objeto poder no tiene DisparoJugador");
-            }
-        }
-        else
-        {
-            Debug.LogError("Poder no asignado");
         }
 
+        // Esperar el resto de la animación
+        yield return new WaitForSeconds(
+            duracionAnimacion - tiempoDisparo);
+
+        // Finalizar animación
         anim.SetBool("isSendingMagic", false);
 
         atacando = false;
     }
-
     public void Danarse(int daño)
     {
         vida -= daño;
@@ -113,44 +114,41 @@ public class Jugador_control : MonoBehaviour
             Morir();
         }
     }
-
     public void Morir()
     {
         if (muerto) return;
 
         muerto = true;
 
-
         anim.SetTrigger("Morir");
-     
 
         Debug.Log("JUGADOR MUERTO");
 
+        FindObjectOfType<GameManager>().MostrarGameOver();
     }
-
     public void IncrementarContadorEne()
     {
-        contador=contador + 2;
-        
+        contador = contador + 2;
+
         if (textoContador != null)
         {
             textoContador.text = "Puntaje: " + contador.ToString();
         }
-        
+
         Debug.Log("Puntaje: " + contador);
     }
     public void IncrementarContadorDes()
     {
         contador++;
-        
+
         if (textoContador != null)
         {
             textoContador.text = "Puntaje: " + contador.ToString();
         }
-        
+
         Debug.Log("Puntaje: " + contador);
     }
-    
+
     public IEnumerator ReiniciarEscena()
     {
         muerto = true;

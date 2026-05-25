@@ -6,6 +6,8 @@ public class Enemigo : MonoBehaviour
 {
     [Header("Referencias")]
     public Transform jugador;
+    public float tiempoDisparo = 0.10f;
+    public float duracionAnimacion = 0.40f;
     Animator anim;
 
     [Header("Disparo")]
@@ -96,9 +98,9 @@ public class Enemigo : MonoBehaviour
 
     IEnumerator ReiniciarAtaque()
     {
-        yield return new WaitForSeconds(0.5f);
+        // Esperar momento exacto del disparo
+        yield return new WaitForSeconds(tiempoDisparo);
 
-        // DISPARO
         if (poder != null)
         {
             DisparoEnemigo disparo =
@@ -114,7 +116,9 @@ public class Enemigo : MonoBehaviour
             }
         }
 
-        yield return new WaitForSeconds(1f);
+        // Esperar el resto de la animación
+        yield return new WaitForSeconds(
+            duracionAnimacion - tiempoDisparo);
 
         anim.SetBool("isSendingMagic", false);
 
